@@ -3,6 +3,8 @@ package com.dcssn.oauth2.system.dao.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.dcssn.oauth2.system.dao.entity.Role;
 
+import java.util.List;
+
 /**
  * <p>
  * 服务类
@@ -20,4 +22,11 @@ public interface RoleService extends IService<Role> {
      * @return role
      */
     Role findByIdWithMenus(Long id);
+
+    /**
+     * 所有role，包含菜单
+     *
+     * @return list
+     */
+    List<Role> findAllWithMenus();
 }

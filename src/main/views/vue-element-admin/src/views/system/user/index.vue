@@ -142,9 +142,9 @@ export default {
   methods: {
     async getUsers() {
       this.listLoading = true
-      const { data: { content, totalElements }} = await getUsers(this.listQuery)
-      this.userList = content
-      this.total = totalElements
+      const { data: { records, total }} = await getUsers(this.listQuery)
+      this.userList = records
+      this.total = total
       this.listLoading = false
     },
     async getAllRole() {

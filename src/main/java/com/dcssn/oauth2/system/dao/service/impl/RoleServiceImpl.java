@@ -35,6 +35,21 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     @Override
     public Role findByIdWithMenus(Long id) {
         Role role = this.getById(id);
+        addMenu(role);
+        return role;
+    }
+
+    @Override
+    public List<Role> findAllWithMenus() {
+        List<Role> roles = this.list();
+        for (Role role : roles) {
+            addMenu(role);
+        }
+        return roles;
+    }
+
+
+    private void addMenu(Role role) {
         if (role != null) {
             List<RoleMenu> roleMenus = roleMenuService.findByRoleId(role.getId());
             if (!roleMenus.isEmpty()) {
@@ -42,6 +57,5 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
                 role.setMenus(menus);
             }
         }
-        return role;
     }
 }
