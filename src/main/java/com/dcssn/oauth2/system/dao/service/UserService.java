@@ -20,4 +20,20 @@ public interface UserService extends IService<User> {
      * @return user
      */
     User findByUsername(String username);
+
+    /**
+     * 校验用户名是否可用
+     *
+     * @param id       用户id
+     * @param username 用户名
+     * @return true 可用
+     */
+    boolean validUsername(Long id, String username);
+
+    /**
+     * 移除role
+     *
+     * @param id 用户id
+     */
+    void removeRole(Long id);
 }

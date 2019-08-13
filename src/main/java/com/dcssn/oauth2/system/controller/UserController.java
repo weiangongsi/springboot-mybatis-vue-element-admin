@@ -6,6 +6,7 @@ import com.dcssn.oauth2.common.BaseController;
 import com.dcssn.oauth2.common.constants.Security;
 import com.dcssn.oauth2.system.config.serurity.CustomUserDetails;
 import com.dcssn.oauth2.system.dao.entity.User;
+import com.dcssn.oauth2.system.dao.service.RoleService;
 import com.dcssn.oauth2.system.dao.service.UserService;
 import com.dcssn.oauth2.system.utils.HttpResultUtils;
 import com.dcssn.oauth2.system.utils.SecurityUtil;
@@ -36,6 +37,9 @@ public class UserController extends BaseController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private RoleService roleService;
+
     /**
      * 获取用户信息
      *
@@ -61,12 +65,20 @@ public class UserController extends BaseController {
         QueryWrapper<User> qw = new QueryWrapper<>();
         qw.lambda().ne(User::getUsername, "admin");
         IPage<User> page = userService.page(startPage(User.class), qw);
+        page.getRecords().forEach(user -> {
+            if (user.getRoleId() != null) {
+                user.setRole(roleService.getById(user.getRoleId()));
+            }
+        });
         return HttpResultUtils.success(page);
     }
 
     @PostMapping("")
     public HttpResultUtils.HttpResult create(@RequestBody User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        if (user.getRole() != null && user.getRole().getId() != null) {
+            user.setRoleId(user.getRole().getId());
+        }
         userService.save(user);
         return HttpResultUtils.success();
     }
@@ -78,9 +90,12 @@ public class UserController extends BaseController {
             currentUser.setNickname(user.getNickname());
             currentUser.setDescription(user.getDescription());
             if (user.getRole() != null && user.getRole().getId() != null) {
-
+                currentUser.setRoleId(user.getRole().getId());
+            } else {
+                user.setRoleId(null);
+                userService.removeRole(user.getId());
             }
-            userService.save(currentUser);
+            userService.updateById(currentUser);
             return HttpResultUtils.success();
         }
         return HttpResultUtils.fail();
@@ -88,23 +103,19 @@ public class UserController extends BaseController {
 
     @DeleteMapping("/{id}")
     public HttpResultUtils.HttpResult update(@PathVariable Long id) {
-//        userRepository.deleteById(id);
+        userService.removeById(id);
         return HttpResultUtils.success();
     }
 
 
     @PostMapping("valid-username")
     public HttpResultUtils.HttpResult validUsername(Long id, String username) {
-        User user = null;
+        boolean valid = userService.validUsername(id, username);
         // 用户不存在返回成功
-        if (user == null) {
+        if (valid) {
             return HttpResultUtils.success(true);
         } else {
-            if (user.getId().equals(id)) {
-                return HttpResultUtils.success(true);
-            } else {
-                return HttpResultUtils.success(false);
-            }
+            return HttpResultUtils.success(false);
         }
     }
 
